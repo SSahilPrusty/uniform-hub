@@ -1,0 +1,43 @@
+{
+  "name": "uniform-hub",
+  "version": "1.0.0",
+  "description": "UNIFORM HUB - Multi-Vendor School Uniform E-Commerce Marketplace",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspaces",
+    "dev:web": "npm run dev --workspace=apps/web",
+    "dev:api": "npm run dev --workspace=apps/api",
+    "build": "npm run build --workspaces",
+    "build:web": "npm run build --workspace=apps/web",
+    "build:api": "npm run build --workspace=apps/api",
+    "test": "npm run test --workspaces --if-present",
+    "db:generate": "npx prisma generate",
+    "db:push": "npx prisma db push",
+    "db:seed": "npx tsx prisma/seed.ts",
+    "db:studio": "npx prisma studio"
+  },
+  "keywords": [
+    "school-uniforms",
+    "marketplace",
+    "ecommerce",
+    "uniform-hub",
+    "react",
+    "express",
+    "prisma"
+  ],
+  "author": "Uniform Hub Engineering Team",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "prisma": "^6.4.1",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.4.1"
+  }
+}

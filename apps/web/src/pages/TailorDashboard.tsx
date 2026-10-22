@@ -59,6 +59,10 @@ interface AssignedOrder {
   productionStatus: string;
   priority: string;
   notes?: string | null;
+  tailorCompletionNotes?: string | null;
+  tailorCompletedAt?: string | null;
+  correctionReason?: string | null;
+  isVerifiedByAdmin?: boolean;
 }
 
 export const TailorDashboard: React.FC = () => {
@@ -85,6 +89,11 @@ export const TailorDashboard: React.FC = () => {
   const [newStatusSelection, setNewStatusSelection] = useState("IN_PROGRESS");
   const [statusNotes, setStatusNotes] = useState("");
   const [isSubmittingStatus, setIsSubmittingStatus] = useState(false);
+
+  // Complete Order Modal ("Completed by Tailor")
+  const [completingOrder, setCompletingOrder] = useState<AssignedOrder | null>(null);
+  const [completionNotes, setCompletionNotes] = useState("");
+  const [isSubmittingCompletion, setIsSubmittingCompletion] = useState(false);
 
   // Success alert
   const [alertSuccess, setAlertSuccess] = useState<string | null>(null);
@@ -174,14 +183,53 @@ export const TailorDashboard: React.FC = () => {
     }
   };
 
+  const handleCompleteOrderSubmit = async () => {
+    if (!completingOrder) return;
+    setIsSubmittingCompletion(true);
+    try {
+      const res = await api.post(`/dispatch/tailor/complete-order/${completingOrder.orderId}`, {
+        completionNotes: completionNotes.trim() || undefined,
+      });
+
+      if (res.data.success) {
+        setAlertSuccess(
+          `Order #${completingOrder.orderNumber} marked as Completed by Tailor! Successfully transferred to Operational Admin "Ready for Dispatch" queue.`
+        );
+        setTimeout(() => setAlertSuccess(null), 5000);
+        setCompletingOrder(null);
+        setCompletionNotes("");
+        loadTailorWorkspace();
+      }
+    } catch (err: any) {
+      alert("Error completing order: " + (err.response?.data?.error || err.message));
+    } finally {
+      setIsSubmittingCompletion(false);
+    }
+  };
+
   const filteredOrders = assignedOrders.filter((order) => {
     if (activeTab === "ACTIVE") {
-      return !["READY_FOR_DISPATCH", "DISPATCHED", "DELIVERED", "CANCELLED"].includes(
-        order.productionStatus
-      );
+      return ![
+        "COMPLETED_BY_TAILOR",
+        "AWAITING_FRANCHISE_ASSIGNMENT",
+        "ASSIGNED_TO_FRANCHISE",
+        "PACKAGE_PREPARED",
+        "READY_FOR_DISPATCH",
+        "DISPATCHED",
+        "DELIVERED",
+        "CANCELLED",
+      ].includes(order.productionStatus);
     }
     if (activeTab === "COMPLETED") {
-      return ["READY_FOR_DISPATCH", "DISPATCHED", "DELIVERED"].includes(order.productionStatus);
+      return [
+        "COMPLETED_BY_TAILOR",
+        "AWAITING_FRANCHISE_ASSIGNMENT",
+        "ASSIGNED_TO_FRANCHISE",
+        "PACKAGE_PREPARED",
+        "READY_FOR_DISPATCH",
+        "DISPATCHED",
+        "DELIVERED",
+      ].includes(order.productionStatus);
     }
     return true;
   });
@@ -457,7 +505,33 @@ export const TailorDashboard: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Special instructions */}
+                  {/* Returned for Correction Warning */}
+                  {order.productionStatus === "RETURNED_FOR_CORRECTION" && (
+                    <div className="p-3 bg-rose-50 border border-rose-300 rounded-2xl space-y-1.5 text-xs">
+                      <div className="flex items-center gap-2 text-rose-800 font-bold">
+                        <AlertTriangle className="w-4 h-4 text-rose-600 flex-shrink-0" />
+                        <span>Returned for Correction by Operational Admin</span>
+                      </div>
+                      <p className="text-rose-900 bg-white/80 p-2 rounded-xl border border-rose-200">
+                        <strong>Admin Correction Reason:</strong> {order.correctionReason || "Alteration required"}
+                      </p>
+                      <p className="text-slate-600 text-[11px]">
+                        Please make the necessary alterations or adjustments, then click "Re-submit Completed Order" to return it for Operational Admin verification.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Completed by Tailor details */}
+                  {order.tailorCompletedAt && (
+                    <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl text-[11px] text-emerald-900 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                      <span>✓ Completed by Tailor: {formatDateTime(order.tailorCompletedAt)}</span>
+                      {order.tailorCompletionNotes && (
+                        <span className="italic text-slate-600">Notes: "{order.tailorCompletionNotes}"</span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Customer Special instructions */}
                   {order.notes && (
                     <div className="p-2.5 bg-amber-50/60 border border-amber-200 rounded-xl text-[11px] text-amber-800">
                       <strong>Customer Special Instructions:</strong> {order.notes}
@@ -511,15 +585,23 @@ export const TailorDashboard: React.FC = () => {
                           </button>
                         )}
 
-                        {order.productionStatus === "QUALITY_CHECK" && (
+                        {/* Step 3: Complete Order by Tailor Button */}
+                        {!["COMPLETED_BY_TAILOR", "READY_FOR_DISPATCH", "DISPATCHED", "DELIVERED"].includes(
+                          order.productionStatus
+                        ) && (
                           <button
                             onClick={() => {
-                              setUpdatingOrder(order);
-                              setNewStatusSelection("READY_FOR_DISPATCH");
+                              setCompletingOrder(order);
+                              setCompletionNotes("");
                             }}
-                            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition-colors"
+                            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition-colors flex items-center gap-1.5"
                           >
-                            Mark Ready for Dispatch
+                            <CheckCircle className="w-3.5 h-3.5" />
+                            <span>
+                              {order.productionStatus === "RETURNED_FOR_CORRECTION"
+                                ? "Re-submit Completed Order"
+                                : "Completed by Tailor"}
+                            </span>
                           </button>
                         )}
 
@@ -661,6 +743,83 @@ export const TailorDashboard: React.FC = () => {
                     <>
                       <Check className="w-3.5 h-3.5" />
                       <span>Save Progress</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ========================================================================= */}
+      {/* MODAL: STEP 3 - COMPLETE ORDER BY TAILOR */}
+      {/* ========================================================================= */}
+      {completingOrder && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white max-w-lg w-full rounded-3xl border border-slate-200 p-6 shadow-2xl space-y-4 text-xs">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
+              <CheckCircle className="w-6 h-6" />
+            </div>
+
+            <div className="text-center space-y-1">
+              <h3 className="text-lg font-extrabold text-slate-900 font-serif">
+                Mark Order #{completingOrder.orderNumber} as Completed by Tailor
+              </h3>
+              <p className="text-slate-500">
+                Customer: <strong>{completingOrder.customerName}</strong> • {completingOrder.items.length} garment(s)
+              </p>
+            </div>
+
+            <div className="p-3 bg-amber-50/70 border border-amber-200 rounded-2xl text-[11px] text-amber-900 space-y-1">
+              <p className="font-bold flex items-center gap-1.5">
+                <AlertCircle className="w-3.5 h-3.5 text-amber-700" />
+                Workflow Clarification:
+              </p>
+              <p>
+                Marking this as <strong>"Completed by Tailor"</strong> records that tailoring, stitching, and finishing are completed. The order will be immediately transferred to the Operational Admin <strong>"Ready for Dispatch"</strong> queue for quality verification and franchise dispatch assignment.
+              </p>
+              <p className="italic text-slate-500">
+                (This does not mark the order as dispatched to the customer yet.)
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">
+                  Tailor Completion Notes (Optional)
+                </label>
+                <textarea
+                  rows={3}
+                  placeholder="e.g. Garment measured against student size specifications, hemmed, pressed, buttons reinforced, ready for inspection."
+                  value={completionNotes}
+                  onChange={(e) => setCompletionNotes(e.target.value)}
+                  className="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setCompletingOrder(null)}
+                  className="w-1/2 py-2.5 border border-slate-300 rounded-xl font-bold text-slate-600 hover:bg-slate-100"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={isSubmittingCompletion}
+                  onClick={handleCompleteOrderSubmit}
+                  className="w-1/2 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-md flex items-center justify-center gap-1.5 disabled:opacity-50"
+                >
+                  {isSubmittingCompletion ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Completing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-3.5 h-3.5" />
+                      <span>Confirm Completion</span>
                     </>
                   )}
                 </button>

@@ -473,6 +473,10 @@ export const getMyAssignedOrders = async (req: Request, res: Response): Promise<
           productionStatus: a.order.productionStatus,
           priority: a.order.priority,
           notes: a.order.notes,
+          tailorCompletionNotes: (a.order as any).tailorCompletionNotes,
+          tailorCompletedAt: (a.order as any).tailorCompletedAt,
+          correctionReason: (a.order as any).correctionReason,
+          isVerifiedByAdmin: (a.order as any).isVerifiedByAdmin,
         })),
       },
     });

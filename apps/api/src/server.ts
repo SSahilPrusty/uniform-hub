@@ -21,6 +21,7 @@ import tailorPortalRoutes from "./modules/portals/tailorPortal.routes.js";
 import adminRoutes from "./modules/portals/admin.routes.js";
 import superAdminRoutes from "./modules/portals/superAdmin.routes.js";
 import assignmentRoutes from "./modules/assignment/assignment.routes.js";
+import dispatchRoutes from "./modules/dispatch/dispatch.routes.js";
 
 const app = express();
 
@@ -85,6 +86,7 @@ app.use("/api/portal/tailor", tailorPortalRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/super-admin", superAdminRoutes);
 app.use("/api/assignment", assignmentRoutes);
+app.use("/api/dispatch", dispatchRoutes);
 
 // 404 Catch-all
 app.use((_req, res) => {

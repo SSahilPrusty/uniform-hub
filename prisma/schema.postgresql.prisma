@@ -36,6 +36,7 @@ model User {
   auditLogs        AuditLog[]
   userRoles        UserRole[]
   assignedOrders      OrderAssignment[]        @relation("AssignedByAdmin")
+  assignedFranchiseOrders FranchiseOrderAssignment[] @relation("FranchiseAssignedByAdmin")
   assignmentHistories AssignmentHistory[]      @relation("ChangedByUser")
   statusHistories     ProductionStatusHistory[] @relation("StatusChangedByUser")
 
@@ -150,6 +151,8 @@ model FranchiseProfile {
   products        Product[]
   inventories     Inventory[]
   vendorPayouts   VendorPayout[]
+  orders          Order[]
+  orderAssignments FranchiseOrderAssignment[]
 }
 
 model TailorProfile {
@@ -377,14 +380,36 @@ model Order {
   paymentReference  String?
   trackingNumber    String?
   courierPartner    String?
-  productionStatus  String         @default("PENDING") // PENDING, AWAITING_TAILOR_ASSIGNMENT, ASSIGNED, ACCEPTED, IN_PROGRESS, QUALITY_CHECK, READY_FOR_DISPATCH, DISPATCHED, DELIVERED, CANCELLED
+  productionStatus  String         @default("PENDING") // PENDING, AWAITING_TAILOR_ASSIGNMENT, ASSIGNED, ACCEPTED, IN_PROGRESS, QUALITY_CHECK, COMPLETED_BY_TAILOR, RETURNED_FOR_CORRECTION, AWAITING_FRANCHISE_ASSIGNMENT, ASSIGNED_TO_FRANCHISE, PACKAGE_PREPARED, READY_FOR_DISPATCH, DISPATCHED, DELIVERED, CANCELLED
   priority          String         @default("NORMAL") // LOW, NORMAL, HIGH, URGENT
   expectedCompletionDate DateTime?
   notes             String?
+
+  // Tailor completion & Operational Admin verification
+  tailorCompletedAt DateTime?
+  tailorCompletionNotes String?
+  isVerifiedByAdmin Boolean        @default(false)
+  verifiedAt        DateTime?
+  verifiedById      String?
+  correctionReason  String?
+
+  // Franchise assignment & fulfillment
+  franchiseId       String?
+  franchiseAssignedAt DateTime?
+  franchiseAssignedById String?
+  dispatchedAt      DateTime?
+  dispatchedById    String?
+  trackingUrl       String?
+  packageReference  String?
+  shippingNotes     String?
+  deliveredAt       DateTime?
+  deliveredConfirmedById String?
+
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
 
   user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  franchise         FranchiseProfile? @relation(fields: [franchiseId], references: [id], onDelete: SetNull)
   items             OrderItem[]
   payments          Payment[]
   refunds           Refund[]
@@ -393,6 +418,7 @@ model Order {
   assignments       OrderAssignment[]
   assignmentHistories AssignmentHistory[]
   productionHistory ProductionStatusHistory[]
+  franchiseAssignments FranchiseOrderAssignment[]
 
   @@index([userId])
   @@index([orderNumber])
@@ -577,6 +603,27 @@ model ProductionStatusHistory {
 
   @@index([orderId])
   @@index([newStatus])
+}
+
+model FranchiseOrderAssignment {
+  id           String           @id @default(uuid())
+  orderId      String
+  franchiseId  String
+  assignedById String?
+  status       String           @default("ASSIGNED") // ASSIGNED, PACKAGE_PREPARED, DISPATCHED, CANCELLED
+  notes        String?
+  assignedAt   DateTime         @default(now())
+  dispatchedAt DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  order        Order            @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  franchise    FranchiseProfile @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+  assignedBy   User?            @relation("FranchiseAssignedByAdmin", fields: [assignedById], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@index([franchiseId])
+  @@index([status])
 }
 
 // -------------------------------------------------------------

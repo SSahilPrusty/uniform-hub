@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { api } from "../services/api";
 import { formatINR, formatDateTime } from "../utils/formatters";
+import { FranchiseDispatchOrders } from "../components/franchise/FranchiseDispatchOrders";
 
 export const FranchiseDashboard: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -154,6 +155,24 @@ export const FranchiseDashboard: React.FC = () => {
             Overview
           </button>
           <button
+            onClick={() => setSearchParams({ tab: "ready-dispatch" })}
+            className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
+              activeTab === "ready-dispatch" ? "bg-white text-brand-blue shadow-sm" : "hover:text-slate-900"
+            }`}
+          >
+            <Package className="w-3.5 h-3.5" />
+            <span>Orders Ready for Dispatch</span>
+          </button>
+          <button
+            onClick={() => setSearchParams({ tab: "dispatched" })}
+            className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
+              activeTab === "dispatched" ? "bg-white text-brand-blue shadow-sm" : "hover:text-slate-900"
+            }`}
+          >
+            <Truck className="w-3.5 h-3.5" />
+            <span>Dispatched Orders</span>
+          </button>
+          <button
             onClick={() => setSearchParams({ tab: "inventory" })}
             className={`px-3 py-1.5 rounded-lg transition-all ${
               activeTab === "inventory" ? "bg-white text-brand-blue shadow-sm" : "hover:text-slate-900"
@@ -282,6 +301,12 @@ export const FranchiseDashboard: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Orders Ready for Dispatch Tab (STEP 6) */}
+      {activeTab === "ready-dispatch" && <FranchiseDispatchOrders initialTab="READY" />}
+
+      {/* Dispatched Orders Tab (STEP 6) */}
+      {activeTab === "dispatched" && <FranchiseDispatchOrders initialTab="DISPATCHED" />}
 
       {/* Orders Tab */}
       {activeTab === "orders" && (

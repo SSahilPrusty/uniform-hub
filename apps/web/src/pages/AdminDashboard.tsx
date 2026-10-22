@@ -13,11 +13,13 @@ import {
   XCircle,
   ShieldCheck,
   Search,
+  Truck,
 } from "lucide-react";
 import { api } from "../services/api";
 import { formatINR, formatDateTime } from "../utils/formatters";
 import { CustomerOrderAssignment } from "../components/admin/CustomerOrderAssignment";
 import { TailorApplications } from "../components/admin/TailorApplications";
+import { ReadyForDispatch } from "../components/admin/ReadyForDispatch";
 
 export const AdminDashboard: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -145,6 +147,15 @@ export const AdminDashboard: React.FC = () => {
         >
           <Scissors className="w-3.5 h-3.5" />
           <span>Customer Order Assignment</span>
+        </button>
+        <button
+          onClick={() => setSearchParams({ tab: "ready-for-dispatch" })}
+          className={`px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 ${
+            activeTab === "ready-for-dispatch" ? "bg-brand-blue text-white shadow-sm" : "hover:text-slate-900"
+          }`}
+        >
+          <Truck className="w-3.5 h-3.5" />
+          <span>Ready for Dispatch</span>
         </button>
         <button
           onClick={() => setSearchParams({ tab: "tailor-applications" })}
@@ -418,6 +429,9 @@ export const AdminDashboard: React.FC = () => {
 
       {/* Customer Order Assignment Tab */}
       {activeTab === "order-assignment" && <CustomerOrderAssignment />}
+
+      {/* Ready for Dispatch Tab */}
+      {activeTab === "ready-for-dispatch" && <ReadyForDispatch />}
 
       {/* Tailor Applications Tab */}
       {activeTab === "tailor-applications" && <TailorApplications />}

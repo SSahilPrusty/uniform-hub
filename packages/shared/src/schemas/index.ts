@@ -117,6 +117,11 @@ export const UpdateProductionStatusSchema = z.object({
     "ACCEPTED",
     "IN_PROGRESS",
     "QUALITY_CHECK",
+    "COMPLETED_BY_TAILOR",
+    "RETURNED_FOR_CORRECTION",
+    "AWAITING_FRANCHISE_ASSIGNMENT",
+    "ASSIGNED_TO_FRANCHISE",
+    "PACKAGE_PREPARED",
     "READY_FOR_DISPATCH",
     "DISPATCHED",
     "DELIVERED",
@@ -133,4 +138,43 @@ export const UpdateTailorAvailabilitySchema = z.object({
 export const UpdateOrderPrioritySchema = z.object({
   priority: z.enum(["LOW", "NORMAL", "HIGH", "URGENT"]),
   expectedCompletionDate: z.string().optional().nullable(),
+});
+
+export const TailorCompleteOrderSchema = z.object({
+  completionNotes: z.string().optional().nullable(),
+});
+
+export const VerifyCompletedOrderSchema = z.object({
+  notes: z.string().optional().nullable(),
+});
+
+export const ReturnForCorrectionSchema = z.object({
+  reason: z.string().min(5, "A detailed correction reason is required (at least 5 characters)"),
+});
+
+export const AssignFranchiseSchema = z.object({
+  orderId: z.string().min(1, "Order ID is required"),
+  franchiseId: z.string().min(1, "Franchise ID is required"),
+  notes: z.string().optional().nullable(),
+});
+
+export const FranchiseDispatchSchema = z.object({
+  courierPartner: z.string().min(2, "Courier or logistics provider is required"),
+  trackingNumber: z.string().min(3, "Tracking ID / Waybill number is required"),
+  dispatchDate: z.string().min(4, "Dispatch date is required"),
+  trackingUrl: z.string().url("Invalid URL format").optional().or(z.literal("")).nullable(),
+  shippingNotes: z.string().optional().nullable(),
+  packageReference: z.string().optional().nullable(),
+});
+
+export const UpdateTrackingInfoSchema = z.object({
+  courierPartner: z.string().min(2, "Courier name required"),
+  trackingNumber: z.string().min(3, "Tracking ID required"),
+  trackingUrl: z.string().url("Invalid URL format").optional().or(z.literal("")).nullable(),
+  shippingNotes: z.string().optional().nullable(),
+  updateReason: z.string().min(3, "Reason for updating tracking information is required"),
+});
+
+export const ConfirmDeliverySchema = z.object({
+  deliveryNotes: z.string().optional().nullable(),
 });

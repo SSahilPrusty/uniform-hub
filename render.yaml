@@ -1,0 +1,49 @@
+services:
+  # Backend REST API Service
+  - type: web
+    name: uniform-hub-api
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm install && npm run build --workspace=@uniform-hub/shared && npm run build --workspace=@uniform-hub/api && npx prisma db push && npx tsx prisma/seed.ts
+    startCommand: npm run start --workspace=@uniform-hub/api
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: DATABASE_URL
+        fromDatabase:
+          name: uniformhub-postgres
+          property: connectionString
+
+  # Frontend Web Client (React + Vite)
+  - type: web
+    name: uniform-hub-web
+    runtime: static
+    plan: free
+    region: oregon
+    buildCommand: npm install && npm run build --workspace=@uniform-hub/shared && npm run build --workspace=@uniform-hub/web
+    staticPublishPath: ./apps/web/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: uniform-hub-api
+          property: host
+
+databases:
+  - name: uniformhub-postgres
+    databaseName: uniform_hub
+    user: uniform_user
+    plan: free
+    region: oregon

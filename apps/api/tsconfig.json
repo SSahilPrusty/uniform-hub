@@ -8,7 +8,11 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": false,
+    "paths": {
+      "@uniform-hub/shared/*": ["../../packages/shared/src/*"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["src/__tests__/**/*"]

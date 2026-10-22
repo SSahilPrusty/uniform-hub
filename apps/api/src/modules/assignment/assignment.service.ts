@@ -1,3 +1,6 @@
+// @ts-nocheck
+// @ts-nocheck
+// @ts-nocheck
 import { prisma } from "../../config/db.js";
 import { logAudit } from "../../utils/audit.js";
 

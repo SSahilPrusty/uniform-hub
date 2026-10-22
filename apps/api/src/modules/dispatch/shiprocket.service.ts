@@ -2,7 +2,7 @@
 import axios from 'axios';
 import { prisma } from '../../config/db.js';
 import crypto from 'crypto';
-import { logger } from '../../utils/logger.js'; // assume logger exists
+// import { logger } from '../../utils/logger.js'; // logger not needed
 
 /**
  * Simple in‑memory cache for the auth token. In production this could be replaced by a
@@ -42,7 +42,7 @@ export async function getShiprocketToken(): Promise<string> {
  */
 export async function createShipment(orderId: string, shipmentPayload: any) {
   // Prevent duplicate shipments
-  const existing = await prisma.shipment.findUnique({ where: { orderId } });
+  const existing = await prisma.shipment.findFirst({ where: { orderId } });
   if (existing) {
     return existing; // idempotent – return existing record
   }
@@ -105,7 +105,7 @@ export function verifyShiprocketWebhookSignature(headers: any): boolean {
 export async function handleShiprocketWebhook(event: any) {
   const { type, data } = event;
   if (!data?.order_id) return;
-  const shipment = await prisma.shipment.findUnique({ where: { orderId: data.order_id } });
+  const shipment = await prisma.shipment.findFirst({ where: { orderId: data.order_id } });
   if (!shipment) return; // ignore if we have no record yet
 
   if (type === 'order_shipped') {

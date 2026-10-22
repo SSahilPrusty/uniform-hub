@@ -1,5 +1,6 @@
 // Shiprocket routes
 import express from 'express';
+import { prisma } from '../../config/db.js';
 import { authenticate } from '../../middleware/auth.js';
 import { requireRole } from '../../middleware/role.js';
 import { createShipment, trackShipment, verifyShiprocketWebhookSignature, handleShiprocketWebhook } from './shiprocket.service.js';
@@ -41,7 +42,7 @@ router.get(
         // For now we assume ownership check passes in tests.
       }
       // Find shipment record to get tracking number
-      const shipment = await (await import('../../config/db.js')).prisma.shipment.findUnique({ where: { orderId } });
+      const shipment = await prisma.shipment.findFirst({ where: { orderId } });
       if (!shipment) {
         return res.status(404).json({ error: 'Shipment not found for this order' });
       }

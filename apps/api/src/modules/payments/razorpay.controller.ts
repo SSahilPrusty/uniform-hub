@@ -1,7 +1,7 @@
 // Razorpay payment controller
 import { Request, Response } from "express";
 import Razorpay from "razorpay";
-import { prisma } from "../../../../prisma/client"; // adjust path as needed
+import { prisma } from "../../config/db.js"; // adjusted import path
 import crypto from "crypto";
 import { config } from "../../config/index.js";
 
@@ -43,7 +43,7 @@ export const createRazorpayOrder = async (req: Request, res: Response) => {
     });
 
     // Save payment record (idempotent – check for existing)
-    const payment = await prisma.payment.upsert({
+    await prisma.payment.upsert({
       where: { transactionRef: razorpayOrder.id },
       update: { provider: "RAZORPAY", amount: order.totalAmount, status: "PENDING" },
       create: {
@@ -62,7 +62,7 @@ export const createRazorpayOrder = async (req: Request, res: Response) => {
       amount: razorpayOrder.amount,
       currency: razorpayOrder.currency,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Razorpay order creation error", error);
     return res.status(500).json({ error: "Failed to create Razorpay order" });
   }
@@ -97,11 +97,7 @@ export const verifyRazorpaySignature = async (req: Request, res: Response) => {
         signature: razorpay_signature,
       },
     });
-
-    await tx.order.update({
-      where: { id: payment.orderId },
-      data: { paymentStatus: "PAID" },
-    });
+    await tx.order.update({ where: { id: payment.orderId }, data: { paymentStatus: "PAID" } });
   });
 
   return res.json({ success: true });
@@ -114,7 +110,10 @@ export const verifyRazorpaySignature = async (req: Request, res: Response) => {
 export const razorpayWebhook = async (req: Request, res: Response) => {
   const signature = req.headers["x-razorpay-signature"] as string;
   const secret = process.env.RAZORPAY_WEBHOOK_SECRET || "";
-  const expected = crypto.createHmac("sha256", secret).update(JSON.stringify(req.body)).digest("hex");
+  const expected = crypto
+    .createHmac("sha256", secret)
+    .update(JSON.stringify(req.body))
+    .digest("hex");
 
   if (signature !== expected) {
     return res.status(400).json({ error: "Invalid webhook signature" });
@@ -126,7 +125,6 @@ export const razorpayWebhook = async (req: Request, res: Response) => {
     const razorpayOrderId = paymentEntity.order_id;
     const razorpayPaymentId = paymentEntity.id;
 
-    // Idempotent update – ignore if already SUCCESS
     const existing = await prisma.payment.findUnique({ where: { transactionRef: razorpayOrderId } });
     if (existing && existing.status === "SUCCESS") {
       return res.json({ status: "already_processed" });
@@ -135,7 +133,11 @@ export const razorpayWebhook = async (req: Request, res: Response) => {
     await prisma.$transaction(async (tx) => {
       const payment = await tx.payment.update({
         where: { transactionRef: razorpayOrderId },
-        data: { status: "SUCCESS", transactionRef: razorpayPaymentId, signature: paymentEntity.signature },
+        data: {
+          status: "SUCCESS",
+          transactionRef: razorpayPaymentId,
+          signature: paymentEntity.signature,
+        },
       });
       await tx.order.update({ where: { id: payment.orderId }, data: { paymentStatus: "PAID" } });
     });

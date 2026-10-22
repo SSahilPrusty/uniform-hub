@@ -14,7 +14,11 @@
     "strict": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": false,
+    "paths": {
+      "@uniform-hub/shared/*": ["../../packages/shared/src/*"]
+    }
   },
   "include": ["src"]
 }

@@ -1,11 +1,8 @@
 // @ts-nocheck
- { Request, Response } from "express";
-// @ts-nocheck
- { prisma } from "../../config/db.js";
-// @ts-nocheck
- { logAudit } from "../../utils/audit.js";
-// @ts-nocheck
- {
+import { Request, Response } from "express";
+import { prisma } from "../../config/db.js";
+import { logAudit } from "../../utils/audit.js";
+import {
   tailorCompleteOrder,
   adminVerifyCompletedOrder,
   adminReturnForCorrection,
@@ -15,8 +12,7 @@
   franchiseDispatchOrder,
   confirmOrderDelivery,
 } from "./dispatch.service.js";
-// @ts-nocheck
- {
+import {
   TailorCompleteOrderSchema,
   VerifyCompletedOrderSchema,
   ReturnForCorrectionSchema,

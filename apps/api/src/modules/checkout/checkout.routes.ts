@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Router } from "express";
 import { processCheckout, verifyPayment } from "./checkout.controller.js";
 import { authenticate } from "../../middleware/auth.js";

@@ -1,11 +1,8 @@
 // @ts-nocheck
- { Router } from "express";
-// @ts-nocheck
- { getSchools, getSchoolBySlug, requestSchoolCatalog } from "./schools.controller.js";
-// @ts-nocheck
- { validateBody } from "../../middleware/validate.js";
-// @ts-nocheck
- { SchoolCatalogRequestSchema } from "@uniform-hub/shared";
+import { Router } from "express";
+import { getSchools, getSchoolBySlug, requestSchoolCatalog } from "./schools.controller.js";
+import { validateBody } from "../../middleware/validate.js";
+import { SchoolCatalogRequestSchema } from "@uniform-hub/shared";
 
 const router = Router();
 

@@ -11,7 +11,8 @@
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
     "paths": {
-      "@uniform-hub/shared/*": ["../../packages/shared/src/*"]
+      "@uniform-hub/shared/*": ["../../packages/shared/src/*"],
+      "@uniform-hub/shared": ["../../packages/shared/src/index.ts"]
     }
   },
   "include": ["src/**/*"],

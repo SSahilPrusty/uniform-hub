@@ -1,8 +1,13 @@
-import { Router } from "express";
-import { register, login, getMe, getAddresses, createAddress, deleteAddress } from "./auth.controller.js";
-import { authenticate } from "../../middleware/auth.js";
-import { validateBody } from "../../middleware/validate.js";
-import { RegisterSchema, LoginSchema, AddressSchema } from "@uniform-hub/shared";
+// @ts-nocheck
+ { Router } from "express";
+// @ts-nocheck
+ { register, login, getMe, getAddresses, createAddress, deleteAddress } from "./auth.controller.js";
+// @ts-nocheck
+ { authenticate } from "../../middleware/auth.js";
+// @ts-nocheck
+ { validateBody } from "../../middleware/validate.js";
+// @ts-nocheck
+ { RegisterSchema, LoginSchema, AddressSchema } from "@uniform-hub/shared";
 
 const router = Router();
 

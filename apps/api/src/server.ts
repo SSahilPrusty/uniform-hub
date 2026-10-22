@@ -23,6 +23,8 @@ import superAdminRoutes from "./modules/portals/superAdmin.routes.js";
 import assignmentRoutes from "./modules/assignment/assignment.routes.js";
 import dispatchRoutes from "./modules/dispatch/dispatch.routes.js";
 import shiprocketRoutes from "./modules/dispatch/shiprocket.routes.js";
+
+// Shiprocket integration routes
 import paymentsRoutes from "./modules/payments/payments.routes.js";
 
 
@@ -97,7 +99,8 @@ app.use("/api/portal/tailor", tailorPortalRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/super-admin", superAdminRoutes);
 app.use("/api/assignment", assignmentRoutes);
-app.use("/api/dispatch", dispatchRoutes);
+app.use("/api/dispatch/shiprocket", shiprocketRoutes);
+
 
 // 404 Catch-all
 app.use((_req, res) => {

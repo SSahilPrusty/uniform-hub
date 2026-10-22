@@ -100,6 +100,8 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/super-admin", superAdminRoutes);
 app.use("/api/assignment", assignmentRoutes);
 app.use("/api/dispatch/shiprocket", shiprocketRoutes);
+app.use("/api/dispatch", dispatchRoutes);
+app.use("/api/payments", paymentsRoutes);
 
 
 // 404 Catch-all

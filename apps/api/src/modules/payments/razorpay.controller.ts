@@ -1,15 +1,17 @@
 // Razorpay payment controller
 import { Request, Response } from "express";
 import Razorpay from "razorpay";
-import { prisma } from "../../config/db.js"; // adjusted import path
+import { prisma } from "../../config/db.js";
 import crypto from "crypto";
-import { config } from "../../config/index.js";
 
-// Initialise Razorpay instance
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID || "",
-  key_secret: process.env.RAZORPAY_KEY_SECRET || "",
-});
+const getRazorpayClient = () => {
+  const key_id = process.env.RAZORPAY_KEY_ID;
+  const key_secret = process.env.RAZORPAY_KEY_SECRET;
+  if (!key_id || !key_secret) {
+    throw new Error("Razorpay credentials are not configured in environment variables.");
+  }
+  return new Razorpay({ key_id, key_secret });
+};
 
 /**
  * Create a Razorpay order for a given UniformHub order.
@@ -36,6 +38,7 @@ export const createRazorpayOrder = async (req: Request, res: Response) => {
   const amountInPaise = Math.round(order.totalAmount * 100);
 
   try {
+    const razorpay = getRazorpayClient();
     const razorpayOrder = await razorpay.orders.create({
       amount: amountInPaise,
       currency: "INR",
@@ -64,7 +67,7 @@ export const createRazorpayOrder = async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     console.error("Razorpay order creation error", error);
-    return res.status(500).json({ error: "Failed to create Razorpay order" });
+    return res.status(500).json({ error: error.message || "Failed to create Razorpay order" });
   }
 };
 

@@ -1,6 +1,3 @@
-// @ts-nocheck
-// @ts-nocheck
-// @ts-nocheck
 import { prisma } from "../../config/db.js";
 import { logAudit } from "../../utils/audit.js";
 
@@ -162,7 +159,7 @@ export async function autoAssignOrder(orderId: string): Promise<{
     });
 
     // Compute live active workload for each candidate
-    const eligibleWithLiveWorkload = [];
+    const eligibleWithLiveWorkload: { tailor: (typeof candidateTailors)[number]; activeCount: number; capacityMargin: number }[] = [];
     for (const tailor of candidateTailors) {
       const activeCount = await tx.orderAssignment.count({
         where: {

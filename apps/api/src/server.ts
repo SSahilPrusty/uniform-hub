@@ -22,6 +22,9 @@ import adminRoutes from "./modules/portals/admin.routes.js";
 import superAdminRoutes from "./modules/portals/superAdmin.routes.js";
 import assignmentRoutes from "./modules/assignment/assignment.routes.js";
 import dispatchRoutes from "./modules/dispatch/dispatch.routes.js";
+import shiprocketRoutes from "./modules/dispatch/shiprocket.routes.js";
+import paymentsRoutes from "./modules/payments/payments.routes.js";
+
 
 const app = express();
 
@@ -35,12 +38,20 @@ app.use(
 app.use(
   cors({
     origin: (origin, callback) => {
-      // allow localhost, 127.0.0.1, or undefined (e.g. mobile apps/curl)
-      if (!origin || origin.includes("localhost") || origin.includes("127.0.0.1")) {
-        callback(null, true);
-      } else {
-        callback(null, true); // Dev-friendly permissive
+      const whitelist = [
+        "https://uniformhub.pages.dev",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+      ];
+      // allow no origin (e.g., curl, mobile apps)
+      if (!origin) {
+        return callback(null, true);
       }
+      if (whitelist.includes(origin)) {
+        return callback(null, true);
+      }
+      // otherwise block
+      return callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
   })

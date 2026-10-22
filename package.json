@@ -11,13 +11,15 @@
     "dev": "npm run dev --workspaces",
     "dev:web": "npm run dev --workspace=apps/web",
     "dev:api": "npm run dev --workspace=apps/api",
-    "build": "npm run build --workspaces",
-    "build:web": "npm run build --workspace=apps/web",
+    "build": "npm run build:all",
+    "build:all": "npm run build:shared && npm run build:api && npm run build:web",
+    "build:shared": "npm run build --workspace=packages/shared",
     "build:api": "npm run build --workspace=apps/api",
+    "build:web": "npm run build --workspace=apps/web",
     "test": "npm run test --workspaces --if-present",
     "db:generate": "npx prisma generate",
     "db:push": "npx prisma db push",
-    "db:seed": "npx tsx prisma/seed.ts",
+    "db:seed": "npx prisma seed",
     "db:studio": "npx prisma studio"
   },
   "keywords": [

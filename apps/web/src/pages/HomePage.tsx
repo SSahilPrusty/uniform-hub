@@ -25,8 +25,20 @@ export const HomePage: React.FC = () => {
 
   useEffect(() => {
     // Load initial home data
-    api.get("/schools?limit=4").then((res) => setSchools(res.data.data.slice(0, 4))).catch(() => {});
-    api.get("/products?featured=true&limit=8").then((res) => setFeaturedProducts(res.data.data)).catch(() => {});
+    api.get("/schools?limit=4").then((res) => {
+        const data = res?.data?.data;
+        if (Array.isArray(data)) {
+          setSchools(data.slice(0, 4));
+        } else {
+          setSchools([]);
+        }
+      }).catch(() => setSchools([]));
+        api.get("/products?featured=true&limit=8")
+      .then((res) => {
+        const data = res?.data?.data;
+        setFeaturedProducts(Array.isArray(data) ? data : []);
+      })
+      .catch(() => setFeaturedProducts([]));
     api.get("/products/categories").then((res) => setCategories(res.data.data.slice(0, 8))).catch(() => {});
   }, []);
 
